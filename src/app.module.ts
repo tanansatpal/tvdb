@@ -11,10 +11,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     AnalyticsModule,
     TypeOrmModule.forRoot({
       type: 'mongodb',
-      host: process.env.DB_HOST,
+      host: process.env.DB_HOST || 'localhost',
       // @ts-ignore
-      port: process.env.DB_PORT,
-      database: process.env.DB_NAME,
+      port: process.env.DB_PORT || 27017,
+      database: process.env.DB_NAME || 'tvdb',
       useUnifiedTopology: true,
       useNewUrlParser: true,
       entities: [
