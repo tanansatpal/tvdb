@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  main:
+    container_name: main
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+    command: npm run start:dev
+    environment:
+      MOVIEDB_KEY: d30a8ccd094845560cb56000cbcf7c02
+      DB_HOST: db_mongo
+      DB_PORT: 27017
+      DB_NAME: tvdb
+    networks:
+      - webnet
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    container_name: db_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - webnet
+
+networks:
+  webnet:
+
+volumes:
+  mongodata:
