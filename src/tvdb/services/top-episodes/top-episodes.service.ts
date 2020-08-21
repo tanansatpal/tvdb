@@ -22,6 +22,10 @@ export class TopEpisodesService {
       return res;
     } else if (res.status === 404) {
       throw new HttpException('Required resource not found', HttpStatus.NOT_FOUND);
+    } else if (res.status === 401) {
+      console.error('API KEY NOT SUPPLIED');
+      // error not sent to the FE regarding the missing API key, as the developer needs to provide that not the user
+      throw new HttpException('Something went wrong! Please contact developer.', HttpStatus.NOT_ACCEPTABLE);
     } else {
       throw new HttpException('Something went wrong!', HttpStatus.NOT_ACCEPTABLE);
     }
