@@ -31,6 +31,4 @@ const topEpisodesMock = [
     'episodeName': 'Faith',
   }];
 
-module.exports = {
-  topEpisodesMock,
-};
+export default topEpisodesMock;

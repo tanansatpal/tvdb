@@ -2,8 +2,8 @@ export class CrewDto {
   id: number;
   credit_id: string;
   name: string;
-  department: string;
-  job: string;
+  department?: string;
+  job?: string;
   gender: number;
   profile_path: string | null;
 }
@@ -30,6 +30,6 @@ export class EpisodeDto {
   still_path: string;
   vote_average: number;
   vote_count: number;
-  crew: CrewDto[];
-  guest_stars: StarDto[];
+  crew?: CrewDto[];
+  guest_stars?: StarDto[];
 }

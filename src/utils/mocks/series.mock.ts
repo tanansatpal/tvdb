@@ -1,4 +1,4 @@
-exports.seriesMock = {
+const seriesMock = {
   'backdrop_path': '/nVRyd8hlg0ZLxBn9RaI7mUMQLnz.jpg',
   'created_by': [
     {
@@ -136,3 +136,4 @@ exports.seriesMock = {
   'vote_average': 8.0,
   'vote_count': 3589,
 };
+export default seriesMock;

@@ -7,13 +7,14 @@ import { CacheService } from '../services/cache/cache.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AnalyticsEntity } from '../../analytics/entity/analytics.entity';
 import { CacheModule } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 
 describe('Tvdb Controller', () => {
   let controller: TvdbController;
   let topEpisodesService: TopEpisodesService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register({})],
+      imports: [CacheModule.register({}), HttpModule],
       controllers: [TvdbController],
       providers: [
         TopEpisodesService,

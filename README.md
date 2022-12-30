@@ -7,7 +7,7 @@ It uses the API from [MovieDB](https://www.themoviedb.org/) to fetch the topEpis
 
 ## Installation
 ```bash
-$ yarn install
+$ npm install
 ```
 
 ## Running the app

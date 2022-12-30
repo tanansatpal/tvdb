@@ -1,6 +1,9 @@
-export class SeasonDto {
+import { EpisodeDto } from './episode.dto';
+
+export class FullSeasonDto {
+  _id: string;
   air_date: string;
-  episode_count: number;
+  episodes: EpisodeDto[];
   id: number;
   name: string;
   overview: string;

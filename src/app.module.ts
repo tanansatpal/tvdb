@@ -12,8 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRoot({
       type: 'mongodb',
       host: process.env.DB_HOST || 'localhost',
-      // @ts-ignore
-      port: process.env.DB_PORT || 27017,
+      port: parseInt(<string>process.env.DB_PORT, 10) || 27017,
       database: process.env.DB_NAME || 'tvdb',
       useUnifiedTopology: true,
       useNewUrlParser: true,

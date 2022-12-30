@@ -1,4 +1,4 @@
-const season1Mock = {
+export const season1Mock = {
   '_id': '52572bfa19c295731c04340b',
   'air_date': '2005-09-13',
   'episodes': [
@@ -2886,8 +2886,7 @@ const season1Mock = {
   'season_number': 1,
 };
 
-
-const season2Mock = {
+export const season2Mock = {
   '_id': '52572bfb19c295731c04342d',
   'air_date': '2006-09-28',
   'episodes': [
@@ -5494,9 +5493,4 @@ const season2Mock = {
   'id': 6905,
   'poster_path': '/O1xXxsAWiCWrw5eMmGCs1JpFNY.jpg',
   'season_number': 2,
-};
-
-module.exports = {
-  season1Mock,
-  season2Mock,
 };

@@ -6,22 +6,21 @@ import { CacheService } from '../cache/cache.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AnalyticsEntity } from '../../../analytics/entity/analytics.entity';
 import { CacheModule } from '@nestjs/common';
-import fetch from 'node-fetch';
-import exp from 'constants';
+import { HttpModule, HttpService } from '@nestjs/axios';
+import { of } from 'rxjs';
 
-const { seriesMock } = require('../../../utils/mocks/series.mock');
-const { season1Mock } = require('../../../utils/mocks/seasons.mock');
-const { topEpisodesMock } = require('../../../utils/mocks/topEpisodes.mock');
-
-jest.mock('node-fetch');
+import seriesMock from '../../../utils/mocks/series.mock';
+import { season1Mock } from '../../../utils/mocks/seasons.mock';
+import topEpisodesMock from '../../../utils/mocks/topEpisodes.mock';
 
 describe('TopEpisodesService', () => {
   let service: TopEpisodesService;
   let cacheService: CacheService;
+  let httpService: HttpService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register({})],
+      imports: [CacheModule.register({}), HttpModule],
       providers: [
         TopEpisodesService,
         SortService,
@@ -42,61 +41,63 @@ describe('TopEpisodesService', () => {
 
     service = module.get<TopEpisodesService>(TopEpisodesService);
     cacheService = module.get<CacheService>(CacheService);
+    httpService = module.get<HttpService>(HttpService);
 
-    fetch.mockReset();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should call external service to fetch the series data and from cache in next', async done => {
+  it('should call external service to fetch the series data and from cache in next', async () => {
     const seriesResponse = {
-      ok: true, json() {
-        return Promise.resolve(seriesMock);
-      },
+      status: 200,
+      statusText: '',
+      headers: {},
+      config: {},
+      data: seriesMock,
     };
-    fetch.mockReturnValue(Promise.resolve(seriesResponse));
     const cacheSpy = jest.spyOn(cacheService, 'get').mockReturnValue(Promise.resolve(undefined));
+    const httpSpy = jest.spyOn(httpService, 'get').mockReturnValue(of(seriesResponse));
     await service.getTvSeries(123);
-    expect(fetch.mock.calls.length).toEqual(1);
-    expect(fetch).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/123?api_key=undefined&language=en-us');
+    expect(httpSpy.mock.calls.length).toEqual(1);
+    expect(httpService.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/123?api_key=undefined&language=en-us');
     expect(cacheSpy).toHaveBeenCalledWith('TV_SERIES_123');
 
-    fetch.mockReset();
+    httpSpy.mockClear();
     cacheSpy.mockClear();
 
     const cacheSpy2 = jest.spyOn(cacheService, 'get').mockReturnValue(Promise.resolve(JSON.stringify(seriesMock)));
     const series = await service.getTvSeries(123);
     expect(cacheSpy2).toHaveBeenCalledWith('TV_SERIES_123');
-    expect(fetch.mock.calls.length).toEqual(0);
+    expect(httpSpy.mock.calls.length).toEqual(0);
     expect(series).toEqual(seriesMock);
-    done();
   });
 
-  it('should call external service to fetch the season data', async done => {
+  it('should call external service to fetch the season data', async () => {
     const season1Response = {
-      ok: true, json() {
-        return Promise.resolve(season1Mock);
-      },
+      status: 200,
+      statusText: '',
+      headers: {},
+      config: {},
+      data: season1Mock,
     };
-    fetch.mockReturnValue(Promise.resolve(season1Response));
     const cacheSpy = jest.spyOn(cacheService, 'get').mockReturnValue(Promise.resolve(undefined));
+    const httpSpy = jest.spyOn(httpService, 'get').mockReturnValue(of(season1Response));
     await service.getSeason(123, 1);
-    expect(fetch.mock.calls.length).toEqual(1);
-    expect(fetch).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/123/season/1?api_key=undefined&language=en-US');
+    expect(httpSpy.mock.calls.length).toEqual(1);
+    expect(httpService.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/123/season/1?api_key=undefined&language=en-US');
     expect(cacheSpy).toHaveBeenCalledWith('TV_SERIES_123_SEASON_1');
-    fetch.mockReset();
+    httpSpy.mockReset();
     cacheSpy.mockClear();
 
     const cacheSpy2 = jest.spyOn(cacheService, 'get').mockReturnValue(Promise.resolve(JSON.stringify(season1Mock)));
     await service.getSeason(123, 1);
     expect(cacheSpy2).toHaveBeenCalledWith('TV_SERIES_123_SEASON_1');
-    expect(fetch.mock.calls.length).toEqual(0);
-    done();
+    expect(httpSpy.mock.calls.length).toEqual(0);
   });
 
-  it('should get topEpisodes', async done => {
+  it('should get topEpisodes', async () => {
 
     const tvSeriesSpy = jest.spyOn(service, 'getTvSeries').mockReturnValue(Promise.resolve(seriesMock));
     const seasonSpy = jest.spyOn(service, 'getSeason').mockReturnValue(Promise.resolve(season1Mock));
@@ -109,26 +110,38 @@ describe('TopEpisodesService', () => {
       [123, 2],
     ]);
     expect(topEpisodes.episodes).toEqual(topEpisodesMock);
-    done();
   });
 
-  it('should fail with 404 if series not found', async done => {
-    fetch.mockReturnValue(Promise.resolve({ status: 404 }));
+  it('should fail with 404 if series not found', async () => {
+    const NotFoundRes = {
+      status: 404,
+      statusText: '',
+      headers: {},
+      config: {},
+      data: {},
+    };
+    const httpSpy = jest.spyOn(httpService, 'get').mockReturnValue(of(NotFoundRes));
     await service.getTvSeries(311).catch(error => {
       expect(error.status).toEqual(404);
-      expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/311?api_key=undefined&language=en-us');
-      done();
+      expect(httpSpy.mock.calls.length).toEqual(1);
+      expect(httpService.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/311?api_key=undefined&language=en-us');
     });
   });
 
-  it('should fail with 406 if unknown erro', async done => {
-    fetch.mockReturnValue(Promise.resolve({ error: true }));
+  it('should fail with 406 if unknown erro', async () => {
+    const NotFoundRes = {
+      status: 500,
+      statusText: '',
+      headers: {},
+      config: {},
+      data: {},
+      error: true,
+    };
+    const httpSpy = jest.spyOn(httpService, 'get').mockReturnValue(of(NotFoundRes));
     await service.getTvSeries(311).catch(error => {
       expect(error.status).toEqual(406);
-      expect(fetch.mock.calls.length).toEqual(1);
-      expect(fetch).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/311?api_key=undefined&language=en-us');
-      done();
+      expect(httpSpy.mock.calls.length).toEqual(1);
+      expect(httpService.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/tv/311?api_key=undefined&language=en-us');
     });
   });
 });
